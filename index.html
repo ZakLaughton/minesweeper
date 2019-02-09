@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Zak's Minesweeper</title>
+    <link rel="stylesheet" href="stylesheet.css" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <h1>Zak's Minesweeper</h1>
+
+    <h2>Choose Field Size</h2>
+    <form id="sizePicker">
+        Field Height:
+        <input type="number" id="inputHeight" name="height" min="1" value="8">
+        Field Width:
+        <input type="number" id="inputWidth" name="width" min="1" value="8">
+        <input type="submit" value="New Game">
+    </form>
+
+    <h2>Mine Field</h2>
+    <p id="instructions">Left-click to uncover. Right-click to add/remove flags.
+      <br>Numbers show how many mines are adjacent.
+    <br>Flag all the mines. Don't blow up.</p>
+
+    <table id="pixelCanvas"></table>
+
+    <script src="script.js"></script>
+</body>
+</html>
