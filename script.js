@@ -21,12 +21,7 @@ function makeGrid(rows, columns) {
     grid += '<tr>';
     // Generate cell with ID to represent row/column location (e.g. "r1c3")
     for (let y = 0; y < columns; y++) {
-      grid +=
-        '<td id="r' +
-        x +
-        'c' +
-        y +
-        '" bgcolor="lightgray" class="covered"></td>';
+      grid += `<td id="r${x}c${y}" bgcolor="lightgray" class="covered"></td>`;
     }
     grid += '</tr>';
   }
@@ -43,7 +38,7 @@ function pickMines(rows, columns) {
   allSquares = [];
   for (let x = 0; x < rows; x++) {
     for (let y = 0; y < columns; y++) {
-      allSquares.push('r' + x + 'c' + y);
+      allSquares.push(`r${x}c${y}`);
     }
   }
   totalMines = Math.floor((rows * columns) / 7);
@@ -52,7 +47,7 @@ function pickMines(rows, columns) {
   } // Make sure there's at least one mine
   allSquares = shuffle(allSquares);
   mines = allSquares.slice(0, totalMines);
-  console.log('mines: ' + mines);
+  console.log(`mines: ${mines}`);
   return mines;
 }
 
@@ -90,14 +85,14 @@ function getNeighbors(squareID) {
   let row = Number(squareID.slice(1, divider));
   let column = Number(squareID.slice(divider + 1));
   // Calculate coordinates for each neighbor
-  let upleft = 'r' + (row - 1) + 'c' + (column - 1);
-  let up = 'r' + (row - 1) + 'c' + column;
-  let upright = 'r' + (row - 1) + 'c' + (column + 1);
-  let right = 'r' + row + 'c' + (column + 1);
-  let downright = 'r' + (row + 1) + 'c' + (column + 1);
-  let down = 'r' + (row + 1) + 'c' + column;
-  let downleft = 'r' + (row + 1) + 'c' + (column - 1);
-  let left = 'r' + row + 'c' + (column - 1);
+  let upleft = `r${row - 1}c${column - 1}`;
+  let up = `r${row - 1}c${column}`;
+  let upright = `r${row - 1}c${column + 1}`;
+  let right = `r${row}c${column + 1}`;
+  let downright = `r${row + 1}c${column + 1}`;
+  let down = `r${row + 1}c${column}`;
+  let downleft = `r${row + 1}c${column - 1}`;
+  let left = `r${row}c${column - 1}`;
   let neighbors = [upleft, up, upright, right, downright, down, downleft, left];
   // Remove extra neighbors if square is on the edge of the grid
   if (row === 0) {
@@ -146,7 +141,7 @@ function gameOver() {
   $('td').off('click');
   $('td').off('contextmenu');
   $.each(mines, function(i, val) {
-    $('#' + val).attr('bgcolor', 'red');
+    $(`#${val}`).attr('bgcolor', 'red');
   });
   $('#remainingText').replaceWith(losingMessage);
 }
@@ -172,7 +167,7 @@ function checkWin() {
   let win = true;
   // is every mine flagged?
   $.each(mines, function(i, val) {
-    if ($('#' + val).hasClass('flagged')) {
+    if ($(`#${val}`).hasClass('flagged')) {
       return true;
     } else {
       win = false;
@@ -195,7 +190,7 @@ function checkWin() {
  * @param {string} squareID - location of a square
  */
 function uncover(squareID) {
-  targetSquare = $('#' + squareID);
+  targetSquare = $(`#${squareID}`);
   // remove attributes of a covered square
   targetSquare.off('click');
   targetSquare.off('contextmenu');
@@ -209,7 +204,7 @@ function uncover(squareID) {
     var neighbors = getNeighbors(squareID);
     targetSquare.attr('bgcolor', '');
     $.each(neighbors, function(i, val) {
-      if ($('#' + val).hasClass('covered')) {
+      if ($(`#${val}`).hasClass('covered')) {
         uncover(val);
       }
     });
@@ -234,9 +229,7 @@ $(document).ready(function() {
     let mines = pickMines(rowCount, columnCount);
     let remainingFlags = mines.length;
     $(
-      '<div id="remainingText"><b>Remaining Flags: </b><span id="remaining">' +
-        remainingFlags +
-        '</span></div>'
+      `<div id="remainingText"><b>Remaining Flags: </b><span id="remaining">${remainingFlags}</span></div>`
     ).insertAfter(pixelCanvas);
     pixelCanvas.html(grid);
 
