@@ -1,6 +1,6 @@
-const pixelCanvas = $('#pixelCanvas');
-const inputHeight = $('#inputHeight');
-const inputWidth = $('#inputWidth');
+const pixelCanvas = document.getElementById('pixelCanvas');
+const inputHeight = document.getElementById('inputHeight');
+const inputWidth = document.getElementById('inputWidth');
 let mines = []; // List of cell id's that represent mine locations
 let rowCount = 0;
 let columnCount = 0;
@@ -57,7 +57,9 @@ function pickMines(rows, columns) {
  * @returns {boolean}
  */
 function isMine(squareID) {
-  return $.inArray(squareID, mines) >= 0;
+  console.log('mines: ', mines);
+  console.log('squareID: ', squareID);
+  return mines.includes(squareID);
 }
 
 /**
@@ -67,7 +69,7 @@ function isMine(squareID) {
  * @returns {array} array with the element removed
  */
 function remove(array, element) {
-  if ($.inArray(element, array) > -1) {
+  if (array.includes(element)) {
     const index = array.indexOf(element);
     array.splice(index, 1);
   }
@@ -125,12 +127,14 @@ function getNeighbors(squareID) {
  */
 function countSurroundingMines(squareID) {
   let neighbors = getNeighbors(squareID);
+  console.log('neighbors: ', neighbors);
   let mineCount = 0;
-  $.each(neighbors, function(i, val) {
+  neighbors.forEach(function(val) {
     if (isMine(val)) {
       mineCount += 1;
     }
   });
+  console.log('mineCount: ', mineCount);
   return mineCount;
 }
 
@@ -140,7 +144,7 @@ function countSurroundingMines(squareID) {
 function gameOver() {
   $('td').off('click');
   $('td').off('contextmenu');
-  $.each(mines, function(i, val) {
+  mines.forEach(function(val) {
     $(`#${val}`).attr('bgcolor', 'red');
   });
   $('#remainingText').replaceWith(losingMessage);
@@ -166,7 +170,7 @@ function shuffle(o) {
 function checkWin() {
   let win = true;
   // is every mine flagged?
-  $.each(mines, function(i, val) {
+  mines.forEach(function(val) {
     if ($(`#${val}`).hasClass('flagged')) {
       return true;
     } else {
@@ -203,7 +207,7 @@ function uncover(squareID) {
   } else if (neighborMineCount === 0) {
     var neighbors = getNeighbors(squareID);
     targetSquare.attr('bgcolor', '');
-    $.each(neighbors, function(i, val) {
+    neighbors.forEach(function(val) {
       if ($(`#${val}`).hasClass('covered')) {
         uncover(val);
       }
@@ -223,15 +227,16 @@ $(document).ready(function() {
     $('.endgame-sub').remove();
     $('#remainingText').remove();
     // Make the field and generate a list of mine locations
-    rowCount = inputHeight.val();
-    columnCount = inputWidth.val();
+    rowCount = inputHeight.value;
+    columnCount = inputWidth.value;
     let grid = makeGrid(rowCount, columnCount);
     let mines = pickMines(rowCount, columnCount);
     let remainingFlags = mines.length;
-    $(
+    pixelCanvas.insertAdjacentHTML(
+      'afterend',
       `<div id="remainingText"><b>Remaining Flags: </b><span id="remaining">${remainingFlags}</span></div>`
-    ).insertAfter(pixelCanvas);
-    pixelCanvas.html(grid);
+    );
+    pixelCanvas.innerHTML = grid;
 
     // uncover square on click if it's not flagged
     $('td').click(function() {
