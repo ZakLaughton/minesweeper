@@ -1,7 +1,7 @@
 const pixelCanvas = document.getElementById('pixelCanvas');
 const inputHeight = document.getElementById('inputHeight');
 const inputWidth = document.getElementById('inputWidth');
-let mines = []; // List of cell id's that represent mine locations
+let mineLocationsArray = []; // List of cell id's that represent mine locations
 let rowCount = 0;
 let columnCount = 0;
 const winningMessage =
@@ -9,83 +9,53 @@ const winningMessage =
 const losingMessage =
   '<div class="endgame-message losing-message">GAME OVER</div><div class="endgame-sub">Click "New Game" to try again!</div>';
 
-/**
- * Generates a blank grid from an HTML table.
- * @param {number} rows
- * @param {number} columns
- * @returns {string} Blank HTML table
- */
-function makeGrid(rows, columns) {
-  let grid = '';
-  for (let x = 0; x < rows; x++) {
-    grid += '<tr>';
+function makeBlankHTMLTableGrid(numberOfRows, numberOfColumns) {
+  let blankHTMLTableGrid = '';
+  for (let x = 0; x < numberOfRows; x++) {
+    blankHTMLTableGrid += '<tr>';
     // Generate cell with ID to represent row/column location (e.g. "r1c3")
-    for (let y = 0; y < columns; y++) {
-      grid += `<td id="r${x}c${y}" bgcolor="lightgray" class="covered"></td>`;
+    for (let y = 0; y < numberOfColumns; y++) {
+      blankHTMLTableGrid += `<td id="r${x}c${y}" bgcolor="lightgray" class="covered"></td>`;
     }
-    grid += '</tr>';
+    blankHTMLTableGrid += '</tr>';
   }
-  return grid;
+  return blankHTMLTableGrid;
 }
 
-/**
- * Randomly generate locations for mines on a grid.
- * @param {number} rows
- * @param {number} columns
- * @returns {array} strings noting the location of mines
- */
-function pickMines(rows, columns) {
+function generateMineLocations(numberOfRows, numberOfColumns) {
   allSquares = [];
-  for (let x = 0; x < rows; x++) {
-    for (let y = 0; y < columns; y++) {
+  for (let x = 0; x < numberOfRows; x++) {
+    for (let y = 0; y < numberOfColumns; y++) {
       allSquares.push(`r${x}c${y}`);
     }
   }
-  totalMines = Math.floor((rows * columns) / 7);
+  totalMines = Math.floor((numberOfRows * numberOfColumns) / 7);
   if (totalMines === 0) {
     totalMines = 1;
   } // Make sure there's at least one mine
-  allSquares = shuffle(allSquares);
-  mines = allSquares.slice(0, totalMines);
-  console.log(`mines: ${mines}`);
-  return mines;
+  allSquares = shuffleArray(allSquares);
+  mineLocationsArray = allSquares.slice(0, totalMines);
+  return mineLocationsArray;
 }
 
-/**
- * Takes a square location and returns true or false if it is a mine
- * @param {string} squareID - location of a square
- * @returns {boolean}
- */
-function isMine(squareID) {
-  console.log('mines: ', mines);
-  console.log('squareID: ', squareID);
-  return mines.includes(squareID);
+function isSquareMine(squareLocation) {
+  return mineLocationsArray.includes(squareLocation);
 }
 
-/**
- * Removes an element from an array based on it's value.
- * @param {array} array
- * @param {string} element
- * @returns {array} array with the element removed
- */
-function remove(array, element) {
-  if (array.includes(element)) {
-    const index = array.indexOf(element);
-    array.splice(index, 1);
+function removeElementFromStringArray(array, string) {
+  const newArray = array;
+  if (newArray.includes(string)) {
+    const index = newArray.indexOf(string);
+    newArray.splice(index, 1);
   }
-  return array;
+  return newArray;
 }
 
-/**
- * Gives the coordinates of all the adjacent squares for a given square.
- * @param {string} squareID - location of a square
- * @returns {array}
- */
-function getNeighbors(squareID) {
-  // determine row and column from squareID on either side of 'c' in the string
-  let divider = squareID.indexOf('c');
-  let row = Number(squareID.slice(1, divider));
-  let column = Number(squareID.slice(divider + 1));
+function getNeighborCoordinates(squareLocation) {
+  // determine row and column from squareLocation on either side of 'c' in the string
+  let divider = squareLocation.indexOf('c');
+  let row = Number(squareLocation.slice(1, divider));
+  let column = Number(squareLocation.slice(divider + 1));
   // Calculate coordinates for each neighbor
   let upleft = `r${row - 1}c${column - 1}`;
   let up = `r${row - 1}c${column}`;
@@ -98,43 +68,36 @@ function getNeighbors(squareID) {
   let neighbors = [upleft, up, upright, right, downright, down, downleft, left];
   // Remove extra neighbors if square is on the edge of the grid
   if (row === 0) {
-    neighbors = remove(neighbors, upleft);
-    neighbors = remove(neighbors, up);
-    neighbors = remove(neighbors, upright);
+    neighbors = removeElementFromStringArray(neighbors, upleft);
+    neighbors = removeElementFromStringArray(neighbors, up);
+    neighbors = removeElementFromStringArray(neighbors, upright);
   }
   if (column === 0) {
-    neighbors = remove(neighbors, upleft);
-    neighbors = remove(neighbors, left);
-    neighbors = remove(neighbors, downleft);
+    neighbors = removeElementFromStringArray(neighbors, upleft);
+    neighbors = removeElementFromStringArray(neighbors, left);
+    neighbors = removeElementFromStringArray(neighbors, downleft);
   }
   if (row === rowCount - 1) {
-    neighbors = remove(neighbors, downleft);
-    neighbors = remove(neighbors, down);
-    neighbors = remove(neighbors, downright);
+    neighbors = removeElementFromStringArray(neighbors, downleft);
+    neighbors = removeElementFromStringArray(neighbors, down);
+    neighbors = removeElementFromStringArray(neighbors, downright);
   }
   if (column === columnCount - 1) {
-    neighbors = remove(neighbors, upright);
-    neighbors = remove(neighbors, right);
-    neighbors = remove(neighbors, downright);
+    neighbors = removeElementFromStringArray(neighbors, upright);
+    neighbors = removeElementFromStringArray(neighbors, right);
+    neighbors = removeElementFromStringArray(neighbors, downright);
   }
   return neighbors;
 }
 
-/**
- * Determine how many mines are in the adjacent squares.
- * @param {string} squareID - location of a square
- * @returns {number}
- */
-function countSurroundingMines(squareID) {
-  let neighbors = getNeighbors(squareID);
-  console.log('neighbors: ', neighbors);
+function countSurroundingMines(squareLocation) {
+  let neighbors = getNeighborCoordinates(squareLocation);
   let mineCount = 0;
   neighbors.forEach(function(val) {
-    if (isMine(val)) {
+    if (isSquareMine(val)) {
       mineCount += 1;
     }
   });
-  console.log('mineCount: ', mineCount);
   return mineCount;
 }
 
@@ -144,24 +107,22 @@ function countSurroundingMines(squareID) {
 function gameOver() {
   $('td').off('click');
   $('td').off('contextmenu');
-  mines.forEach(function(val) {
+  mineLocationsArray.forEach(function(val) {
     $(`#${val}`).attr('bgcolor', 'red');
   });
   $('#remainingText').replaceWith(losingMessage);
 }
 
-/**
- * @description shuffles an array (https://css-tricks.com/snippets/javascript/shuffle-array/)
- * @param {array} o - array to shuffle
- * @returns {array} shuffled array
- */
-function shuffle(o) {
+function shuffleArray(arrayToShuffle) {
   for (
-    var j, x, i = o.length;
+    var j, x, i = arrayToShuffle.length;
     i;
-    j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x
+    j = parseInt(Math.random() * i),
+      x = arrayToShuffle[--i],
+      arrayToShuffle[i] = arrayToShuffle[j],
+      arrayToShuffle[j] = x
   );
-  return o;
+  return arrayToShuffle;
 }
 
 /**
@@ -170,7 +131,7 @@ function shuffle(o) {
 function checkWin() {
   let win = true;
   // is every mine flagged?
-  mines.forEach(function(val) {
+  mineLocationsArray.forEach(function(val) {
     if ($(`#${val}`).hasClass('flagged')) {
       return true;
     } else {
@@ -182,34 +143,30 @@ function checkWin() {
     // uncover any square that is still covered
     $.each($('td'), function(i, val) {
       if (!$(this).hasClass('flagged') && $(this).hasClass('covered')) {
-        var squareID = $(this).attr('id');
-        uncover(squareID);
+        var squareLocation = $(this).attr('id');
+        Square(squareLocation);
       }
     });
   }
 }
 
-/**
- * Uncovers a covered square when the player clicks on it.
- * @param {string} squareID - location of a square
- */
-function uncover(squareID) {
-  targetSquare = $(`#${squareID}`);
+function Square(squareLocation) {
+  targetSquare = $(`#${squareLocation}`);
   // remove attributes of a covered square
   targetSquare.off('click');
   targetSquare.off('contextmenu');
   targetSquare.removeClass('covered');
-  let neighborMineCount = countSurroundingMines(squareID);
+  let neighborMineCount = countSurroundingMines(squareLocation);
   // game over if it's a mine
-  if (isMine(squareID)) {
+  if (isSquareMine(squareLocation)) {
     gameOver();
     // auto-click neighbors if there are no neighbor mines
   } else if (neighborMineCount === 0) {
-    var neighbors = getNeighbors(squareID);
+    var neighbors = getNeighborCoordinates(squareLocation);
     targetSquare.attr('bgcolor', '');
     neighbors.forEach(function(val) {
       if ($(`#${val}`).hasClass('covered')) {
-        uncover(val);
+        Square(val);
       }
     });
     // insert the neighbor mine count in the square
@@ -229,8 +186,8 @@ $(document).ready(function() {
     // Make the field and generate a list of mine locations
     rowCount = inputHeight.value;
     columnCount = inputWidth.value;
-    let grid = makeGrid(rowCount, columnCount);
-    let mines = pickMines(rowCount, columnCount);
+    let grid = makeBlankHTMLTableGrid(rowCount, columnCount);
+    let mines = generateMineLocations(rowCount, columnCount);
     let remainingFlags = mines.length;
     pixelCanvas.insertAdjacentHTML(
       'afterend',
@@ -243,8 +200,8 @@ $(document).ready(function() {
       if ($(this).hasClass('flagged')) {
         return false;
       } else {
-        var squareID = $(this).attr('id');
-        uncover(squareID);
+        var squareLocation = $(this).attr('id');
+        Square(squareLocation);
       }
     });
 
