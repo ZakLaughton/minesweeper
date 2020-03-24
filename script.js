@@ -10,14 +10,16 @@ const losingMessage =
   '<div class="endgame-message losing-message">GAME OVER</div><div class="endgame-sub">Click "New Game" to try again!</div>';
 
 function makeBlankHTMLTableGrid(numberOfRows, numberOfColumns) {
-  let blankHTMLTableGrid = '';
-  for (let x = 0; x < numberOfRows; x++) {
-    blankHTMLTableGrid += '<tr>';
-    // Generate cell with ID to represent row/column location (e.g. "r1c3")
-    for (let y = 0; y < numberOfColumns; y++) {
-      blankHTMLTableGrid += `<td id="r${x}c${y}" bgcolor="lightgray" class="covered"></td>`;
+  let blankHTMLTableGrid = new DocumentFragment();
+  for (let rowNumber = 0; rowNumber < numberOfRows; rowNumber++) {
+    let newRow = document.createElement('tr');
+    for (let columnNumber = 0; columnNumber < numberOfColumns; columnNumber++) {
+      newRow.insertAdjacentHTML(
+        'beforeend',
+        `<td id="r${rowNumber}c${columnNumber}" bgcolor="lightgray" class="covered"></td>`
+      );
     }
-    blankHTMLTableGrid += '</tr>';
+    blankHTMLTableGrid.appendChild(newRow);
   }
   return blankHTMLTableGrid;
 }
@@ -193,7 +195,10 @@ $(document).ready(function() {
       'afterend',
       `<div id="remainingText"><b>Remaining Flags: </b><span id="remaining">${remainingFlags}</span></div>`
     );
-    pixelCanvas.innerHTML = grid;
+    while (pixelCanvas.firstChild) {
+      pixelCanvas.firstChild.remove();
+    }
+    pixelCanvas.appendChild(grid);
 
     // uncover square on click if it's not flagged
     $('td').click(function() {
