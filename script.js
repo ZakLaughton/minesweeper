@@ -1,7 +1,7 @@
 const pixelCanvas = document.getElementById('pixelCanvas');
 const inputHeight = document.getElementById('inputHeight');
 const inputWidth = document.getElementById('inputWidth');
-let mineLocationsArray = []; // List of cell id's that represent mine locations
+let MINE_LOCATIONS_ARRAY = []; // List of cell id's that represent mine locations
 let rowCount = 0;
 let columnCount = 0;
 const winningMessage =
@@ -38,23 +38,32 @@ function makeBlankHTMLTableGrid(numberOfRows, numberOfColumns) {
 }
 
 function generateMineLocations(numberOfRows, numberOfColumns) {
-  allSquares = [];
-  for (let x = 0; x < numberOfRows; x++) {
-    for (let y = 0; y < numberOfColumns; y++) {
-      allSquares.push(`r${x}c${y}`);
-    }
-  }
-  totalMines = Math.floor((numberOfRows * numberOfColumns) / 7);
-  if (totalMines === 0) {
-    totalMines = 1;
-  } // Make sure there's at least one mine
-  allSquares = shuffleArray(allSquares);
-  mineLocationsArray = allSquares.slice(0, totalMines);
+  const allCellIdsForGrid = generateCellIds();
+  const numberOfMines = getNumberOfMinesForFieldSize(numberOfRows * numberOfColumns);
+  const shuffledCellIdsForGrid = shuffleArray(allCellIdsForGrid);
+  const mineLocationsArray = shuffledCellIdsForGrid.slice(0, numberOfMines);
   return mineLocationsArray;
+
+  function getNumberOfMinesForFieldSize(numberOfCells) {
+    const totalMines = Math.floor(numberOfCells / 7);
+    if (totalMines === 0) totalMines = 1;
+    return totalMines;
+  }
+
+  // TODO: Combine with square ID generation in HTML table grid generation
+  function generateCellIds() {
+    cellIds = [];
+    for (let x = 0; x < numberOfRows; x++) {
+      for (let y = 0; y < numberOfColumns; y++) {
+        cellIds.push(`r${x}c${y}`);
+      }
+    }
+    return cellIds;
+  }
 }
 
 function isSquareMine(squareLocation) {
-  return mineLocationsArray.includes(squareLocation);
+  return MINE_LOCATIONS_ARRAY.includes(squareLocation);
 }
 
 function removeElementFromStringArray(array, string) {
@@ -122,7 +131,7 @@ function countSurroundingMines(squareLocation) {
 function gameOver() {
   $('td').off('click');
   $('td').off('contextmenu');
-  mineLocationsArray.forEach(function(val) {
+  MINE_LOCATIONS_ARRAY.forEach(function(val) {
     $(`#${val}`).attr('bgcolor', 'red');
   });
   $('#remainingText').replaceWith(losingMessage);
@@ -146,7 +155,7 @@ function shuffleArray(arrayToShuffle) {
 function checkWin() {
   let win = true;
   // is every mine flagged?
-  mineLocationsArray.forEach(function(val) {
+  MINE_LOCATIONS_ARRAY.forEach(function(val) {
     if ($(`#${val}`).hasClass('flagged')) {
       return true;
     } else {
@@ -202,8 +211,8 @@ $(document).ready(function() {
     rowCount = inputHeight.value;
     columnCount = inputWidth.value;
     let grid = makeBlankHTMLTableGrid(rowCount, columnCount);
-    let mines = generateMineLocations(rowCount, columnCount);
-    let remainingFlags = mines.length;
+    MINE_LOCATIONS_ARRAY = generateMineLocations(rowCount, columnCount);
+    let remainingFlags = MINE_LOCATIONS_ARRAY.length;
     pixelCanvas.insertAdjacentHTML(
       'afterend',
       `<div id="remainingText"><b>Remaining Flags: </b><span id="remaining">${remainingFlags}</span></div>`
