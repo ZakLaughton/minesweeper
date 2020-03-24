@@ -12,16 +12,29 @@ const losingMessage =
 function makeBlankHTMLTableGrid(numberOfRows, numberOfColumns) {
   let blankHTMLTableGrid = new DocumentFragment();
   for (let rowNumber = 0; rowNumber < numberOfRows; rowNumber++) {
-    let newRow = document.createElement('tr');
-    for (let columnNumber = 0; columnNumber < numberOfColumns; columnNumber++) {
-      newRow.insertAdjacentHTML(
-        'beforeend',
-        `<td id="r${rowNumber}c${columnNumber}" bgcolor="lightgray" class="covered"></td>`
-      );
-    }
+    const newRow = makeRow(rowNumber, numberOfColumns);
     blankHTMLTableGrid.appendChild(newRow);
   }
+
   return blankHTMLTableGrid;
+
+  function makeRow(rowNumber, numberOfColumns) {
+    let newRow = document.createElement('tr');
+    for (let columnNumber = 0; columnNumber < numberOfColumns; columnNumber++) {
+      const cellId = `r${rowNumber}c${columnNumber}`;
+      const newCell = makeCell(cellId);
+      newRow.appendChild(newCell);
+    }
+    return newRow;
+  }
+
+  function makeCell(cellId) {
+    const newCell = document.createElement('td');
+    newCell.id = cellId;
+    newCell.bgColor = 'lightgray';
+    newCell.className = 'covered';
+    return newCell;
+  }
 }
 
 function generateMineLocations(numberOfRows, numberOfColumns) {
